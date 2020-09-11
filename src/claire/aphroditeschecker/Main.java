@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -65,28 +66,8 @@ public class Main {
 	
 	public static List<Product> products() throws IOException, ParserConfigurationException, SAXException
 	{
-		StringBuilder result = new StringBuilder();
-		URL url = new URL("https://www.aphrodites.shop/admin/php/ajax.php?request=shop");
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		conn.setRequestMethod("GET");
-		BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		String line;
-		while ((line = rd.readLine()) != null) {
-		   result.append(line);
-		}
-		rd.close();
-		String page1 = result.toString();
-		
-		result = new StringBuilder();
-		url = new URL("https://www.aphrodites.shop/admin/php/ajax.php?request=shop&page=2");
-		conn = (HttpURLConnection) url.openConnection();
-		conn.setRequestMethod("GET");
-		rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		while ((line = rd.readLine()) != null) {
-		   result.append(line);
-		}
-		rd.close();
-		String page2 = result.toString();
+		String page1 = poll(1);
+		String page2 = poll(2);
 		
 		JsonObject obj1 = stringToJSON(page1);
 		JsonObject obj2 = stringToJSON(page2);
@@ -105,6 +86,21 @@ public class Main {
 		}
 		
 		return products;
+	}
+	
+	public static String poll(int page) throws IOException
+	{
+		StringBuilder result = new StringBuilder();
+		URL url = new URL("https://www.aphrodites.shop/admin/php/ajax.php?request=shop&page=" + page);
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setRequestMethod("GET");
+		BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		String line;
+		while ((line = rd.readLine()) != null) {
+		   result.append(line);
+		}
+		rd.close();
+		return result.toString();
 	}
 
 }
