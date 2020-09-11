@@ -44,6 +44,8 @@ public class NotificationMaker {
 		this.popup.addSeparator();
 		for(Product p : items) {
 			MenuItem item = new MenuItem(String.format("%3d %s", p.getStock(), p.getName()));
+			if(p.getStock() == 0)
+				item.setEnabled(false);
 			item.addActionListener((e) -> { openWebpage(p.getURL()); });
 			this.popup.add(item);
 		}
