@@ -1,4 +1,4 @@
-package donut;
+package claire.aphroditeschecker;
 
 import java.awt.AWTException;
 import java.awt.Desktop;

@@ -1,4 +1,4 @@
-package donut;
+package claire.aphroditeschecker;
 
 public class Product {
 	
