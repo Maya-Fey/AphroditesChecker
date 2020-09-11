@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,15 +34,16 @@ public class Main {
 	    NotificationMaker td = new NotificationMaker();
 		while(true) {
 			System.out.println("Scanning...");
-			List<Product> instock = products();
-			Stream<Product> stream = instock.stream().filter((Product s) -> { return watching.contains(s.getName()); });
+			List<Product> products = products();
+			Stream<Product> instock = products.stream().filter((Product p) -> { return p.getStock() > 0; });
+			Stream<Product> stream = instock.filter((Product s) -> { return watching.contains(s.getName()); });
 			List<Product> matching = new ArrayList<>();
 			stream.forEach((s) -> { matching.add(s); });
 			String total = "";
 			for(Product s : matching) {
 				total += s.getName() + "\n";
 			}
-			td.updateMenu(instock);
+			td.updateMenu(products);
 			if(matching.size() > 0) {
 				total = total.substring(0, total.length() - 1);
 				td.displayTray(total);
