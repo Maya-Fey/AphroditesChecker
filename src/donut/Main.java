@@ -1,0 +1,113 @@
+package donut;
+
+import java.awt.AWTException;
+import java.awt.SystemTray;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
+public class Main {
+	
+	public static final Set<String> watching = new HashSet<>();
+	
+	static {
+		watching.add("Climara Forte (Estradiol - 100mcg)");
+		watching.add("Oestrogel 80g (Estradiol Beta17)");
+		watching.add("Progesterone 200");
+		//watching.add("Androcur 50mg (Cyproterone Acetate)");
+	}
+
+	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, AWTException {
+	    NotificationMaker td = new NotificationMaker();
+		while(true) {
+			System.out.println("Scanning...");
+			List<Product> instock = productsInStock();
+			Stream<Product> stream = instock.stream().filter((Product s) -> { return watching.contains(s); });
+			List<Product> matching = new ArrayList<>();
+			stream.forEach((s) -> { matching.add(s); });
+			String total = "";
+			for(Product s : matching) {
+				total += s.getName() + "\n";
+			}
+			td.updateMenu(instock);
+			if(matching.size() > 0) {
+				total = total.substring(0, total.length() - 1);
+				td.displayTray(total);
+			}
+			synchronized(watching) {
+				try {
+					watching.wait(5 * 60 * 1000);
+				} catch (InterruptedException e) {}
+			}
+		}
+	}
+	
+	/**
+	 * @param string A string containing JSON
+	 * @return A JSON object constructed from that string
+	 */
+	public static JsonObject stringToJSON(String string) {
+		return Json.createReader(new StringReader(string)).readObject();
+	}
+	
+	public static List<Product> productsInStock() throws IOException, ParserConfigurationException, SAXException
+	{
+		StringBuilder result = new StringBuilder();
+		URL url = new URL("https://www.aphrodites.shop/admin/php/ajax.php?request=shop");
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setRequestMethod("GET");
+		BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		String line;
+		while ((line = rd.readLine()) != null) {
+		   result.append(line);
+		}
+		rd.close();
+		String page1 = result.toString();
+		
+		result = new StringBuilder();
+		url = new URL("https://www.aphrodites.shop/admin/php/ajax.php?request=shop&page=2");
+		conn = (HttpURLConnection) url.openConnection();
+		conn.setRequestMethod("GET");
+		rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		while ((line = rd.readLine()) != null) {
+		   result.append(line);
+		}
+		rd.close();
+		String page2 = result.toString();
+		
+		JsonObject obj1 = stringToJSON(page1);
+		JsonObject obj2 = stringToJSON(page2);
+		
+		List<JsonObject> list = new ArrayList<>();
+		List<Product> instock = new ArrayList<>();
+		
+		obj1.getJsonArray("products").forEach((ele) -> { list.add(ele.asJsonObject()); });
+		obj2.getJsonArray("products").forEach((ele) -> { list.add(ele.asJsonObject()); });
+		
+		for(JsonObject product : list) {
+			if(Integer.parseInt(product.getString("stock")) > 0) {
+				System.out.println("Name:  " + product.getString("name"));
+				System.out.println("Stock: " + product.getString("stock"));
+				Product prod = new Product(product.getString("name"), Integer.parseInt(product.getString("stock")), "https://www.aphrodites.shop/product/" + product.getString("ref") + "/" + product.getString("nameurl"));
+				instock.add(prod);
+			}
+		}
+		
+		return instock;
+	}
+
+}
