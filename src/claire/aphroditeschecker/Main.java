@@ -34,15 +34,16 @@ public class Main {
 	    NotificationMaker td = new NotificationMaker();
 		while(true) {
 			System.out.println("Scanning...");
-			List<Product> instock = productsInStock();
-			Stream<Product> stream = instock.stream().filter((Product s) -> { return watching.contains(s.getName()); });
+			List<Product> products = products();
+			Stream<Product> instock = products.stream().filter((Product p) -> { return p.getStock() > 0; });
+			Stream<Product> stream = instock.filter((Product s) -> { return watching.contains(s.getName()); });
 			List<Product> matching = new ArrayList<>();
 			stream.forEach((s) -> { matching.add(s); });
 			String total = "";
 			for(Product s : matching) {
 				total += s.getName() + "\n";
 			}
-			td.updateMenu(instock);
+			td.updateMenu(products);
 			if(matching.size() > 0) {
 				total = total.substring(0, total.length() - 1);
 				td.displayTray(total);
@@ -63,10 +64,34 @@ public class Main {
 		return Json.createReader(new StringReader(string)).readObject();
 	}
 	
-	public static List<Product> productsInStock() throws IOException, ParserConfigurationException, SAXException
+	public static List<Product> products() throws IOException, ParserConfigurationException, SAXException
+	{
+		String page1 = poll(1);
+		String page2 = poll(2);
+		
+		JsonObject obj1 = stringToJSON(page1);
+		JsonObject obj2 = stringToJSON(page2);
+		
+		List<JsonObject> list = new ArrayList<>();
+		List<Product> products = new ArrayList<>();
+		
+		obj1.getJsonArray("products").forEach((ele) -> { list.add(ele.asJsonObject()); });
+		obj2.getJsonArray("products").forEach((ele) -> { list.add(ele.asJsonObject()); });
+		
+		for(JsonObject product : list) {
+			System.out.println("Name:  " + product.getString("name"));
+			System.out.println("Stock: " + product.getString("stock"));
+			Product prod = new Product(product.getString("name"), Integer.parseInt(product.getString("stock")), "https://www.aphrodites.shop/product/" + product.getString("ref") + "/" + product.getString("nameurl"));
+			products.add(prod);
+		}
+		
+		return products;
+	}
+	
+	public static String poll(int page) throws IOException
 	{
 		StringBuilder result = new StringBuilder();
-		URL url = new URL("https://www.aphrodites.shop/admin/php/ajax.php?request=shop");
+		URL url = new URL("https://www.aphrodites.shop/admin/php/ajax.php?request=shop&page=" + page);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
 		BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -75,38 +100,7 @@ public class Main {
 		   result.append(line);
 		}
 		rd.close();
-		String page1 = result.toString();
-		
-		result = new StringBuilder();
-		url = new URL("https://www.aphrodites.shop/admin/php/ajax.php?request=shop&page=2");
-		conn = (HttpURLConnection) url.openConnection();
-		conn.setRequestMethod("GET");
-		rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		while ((line = rd.readLine()) != null) {
-		   result.append(line);
-		}
-		rd.close();
-		String page2 = result.toString();
-		
-		JsonObject obj1 = stringToJSON(page1);
-		JsonObject obj2 = stringToJSON(page2);
-		
-		List<JsonObject> list = new ArrayList<>();
-		List<Product> instock = new ArrayList<>();
-		
-		obj1.getJsonArray("products").forEach((ele) -> { list.add(ele.asJsonObject()); });
-		obj2.getJsonArray("products").forEach((ele) -> { list.add(ele.asJsonObject()); });
-		
-		for(JsonObject product : list) {
-			if(Integer.parseInt(product.getString("stock")) > 0) {
-				System.out.println("Name:  " + product.getString("name"));
-				System.out.println("Stock: " + product.getString("stock"));
-				Product prod = new Product(product.getString("name"), Integer.parseInt(product.getString("stock")), "https://www.aphrodites.shop/product/" + product.getString("ref") + "/" + product.getString("nameurl"));
-				instock.add(prod);
-			}
-		}
-		
-		return instock;
+		return result.toString();
 	}
 
 }
