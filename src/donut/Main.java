@@ -1,7 +1,6 @@
 package donut;
 
 import java.awt.AWTException;
-import java.awt.SystemTray;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,7 +35,7 @@ public class Main {
 		while(true) {
 			System.out.println("Scanning...");
 			List<Product> instock = productsInStock();
-			Stream<Product> stream = instock.stream().filter((Product s) -> { return watching.contains(s); });
+			Stream<Product> stream = instock.stream().filter((Product s) -> { return watching.contains(s.getName()); });
 			List<Product> matching = new ArrayList<>();
 			stream.forEach((s) -> { matching.add(s); });
 			String total = "";
@@ -51,7 +50,7 @@ public class Main {
 			synchronized(watching) {
 				try {
 					watching.wait(5 * 60 * 1000);
-				} catch (InterruptedException e) {}
+				} catch (InterruptedException e) { /* Should never happen, single-threaded application. */ }
 			}
 		}
 	}

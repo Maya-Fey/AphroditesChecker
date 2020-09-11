@@ -29,28 +29,28 @@ public class NotificationMaker {
         //If the icon is a file
         Image image = Toolkit.getDefaultToolkit().createImage("answer.png");
 
-        trayIcon = new TrayIcon(image, "Tray Demo");
+        this.trayIcon = new TrayIcon(image, "Tray Demo");
         //Let the system resize the image if needed
-        trayIcon.setImageAutoSize(true);
-        trayIcon.setPopupMenu(popup);
+        this.trayIcon.setImageAutoSize(true);
+        this.trayIcon.setPopupMenu(this.popup);
         //Set tooltip text for the tray icon
-        trayIcon.setToolTip("Aphrodites Scanner");
-        tray.add(trayIcon);
+        this.trayIcon.setToolTip("Aphrodites Scanner");
+        tray.add(this.trayIcon);
 	}
 	
 	public void updateMenu(List<Product> items) {
-		popup.removeAll();
-		popup.add("Last scan: " + new Date());
-		popup.addSeparator();
+		this.popup.removeAll();
+		this.popup.add("Last scan: " + new Date());
+		this.popup.addSeparator();
 		for(Product p : items) {
 			MenuItem item = new MenuItem(String.format("%3d %s", p.getStock(), p.getName()));
 			item.addActionListener((e) -> { openWebpage(p.getURL()); });
-			popup.add(item);
+			this.popup.add(item);
 		}
 	}
 
 	public void displayTray(String available) throws AWTException {
-        trayIcon.displayMessage("Hormones Available", available, MessageType.INFO);
+		this.trayIcon.displayMessage("Hormones Available", available, MessageType.INFO);
     }
 	
 	public static void openWebpage(String urlString) {
