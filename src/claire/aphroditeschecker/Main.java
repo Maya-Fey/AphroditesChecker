@@ -34,7 +34,7 @@ public class Main {
 	    NotificationMaker td = new NotificationMaker();
 		while(true) {
 			System.out.println("Scanning...");
-			List<Product> instock = productsInStock();
+			List<Product> instock = products();
 			Stream<Product> stream = instock.stream().filter((Product s) -> { return watching.contains(s.getName()); });
 			List<Product> matching = new ArrayList<>();
 			stream.forEach((s) -> { matching.add(s); });
@@ -63,7 +63,7 @@ public class Main {
 		return Json.createReader(new StringReader(string)).readObject();
 	}
 	
-	public static List<Product> productsInStock() throws IOException, ParserConfigurationException, SAXException
+	public static List<Product> products() throws IOException, ParserConfigurationException, SAXException
 	{
 		StringBuilder result = new StringBuilder();
 		URL url = new URL("https://www.aphrodites.shop/admin/php/ajax.php?request=shop");
@@ -92,21 +92,19 @@ public class Main {
 		JsonObject obj2 = stringToJSON(page2);
 		
 		List<JsonObject> list = new ArrayList<>();
-		List<Product> instock = new ArrayList<>();
+		List<Product> products = new ArrayList<>();
 		
 		obj1.getJsonArray("products").forEach((ele) -> { list.add(ele.asJsonObject()); });
 		obj2.getJsonArray("products").forEach((ele) -> { list.add(ele.asJsonObject()); });
 		
 		for(JsonObject product : list) {
-			if(Integer.parseInt(product.getString("stock")) > 0) {
-				System.out.println("Name:  " + product.getString("name"));
-				System.out.println("Stock: " + product.getString("stock"));
-				Product prod = new Product(product.getString("name"), Integer.parseInt(product.getString("stock")), "https://www.aphrodites.shop/product/" + product.getString("ref") + "/" + product.getString("nameurl"));
-				instock.add(prod);
-			}
+			System.out.println("Name:  " + product.getString("name"));
+			System.out.println("Stock: " + product.getString("stock"));
+			Product prod = new Product(product.getString("name"), Integer.parseInt(product.getString("stock")), "https://www.aphrodites.shop/product/" + product.getString("ref") + "/" + product.getString("nameurl"));
+			products.add(prod);
 		}
 		
-		return instock;
+		return products;
 	}
 
 }
