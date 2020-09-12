@@ -55,6 +55,10 @@ public class NotificationMaker {
 		this.trayIcon.displayMessage("Hormones Available", available, MessageType.INFO);
     }
 	
+	public void displayError(String error) throws AWTException {
+		this.trayIcon.displayMessage("Error", error, MessageType.ERROR);
+    }
+	
 	public static void openWebpage(String urlString) {
 	    try {
 	        Desktop.getDesktop().browse(new URL(urlString).toURI());
