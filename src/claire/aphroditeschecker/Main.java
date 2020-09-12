@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
-import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -31,22 +29,34 @@ public class Main {
 		//watching.add("Androcur 50mg (Cyproterone Acetate)");
 	}
 
-	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, AWTException {
+	public static void main(String[] args) throws AWTException {
 	    NotificationMaker td = new NotificationMaker();
+	    int parserfail = 0;
 		while(true) {
 			System.out.println("Scanning...");
-			List<Product> products = products();
-			td.updateMenu(products);
-			
-			StringBuilder builder = new StringBuilder();
-			products.stream().filter((Product p) -> { return p.getStock() > 0; }).filter((Product s) -> { return watching.contains(s.getName()); }).forEach((p) -> {
-				builder.append(p.getName());
-				builder.append("\n");
-			});
-			if(builder.length() > 1) {
-				td.displayTray(builder.substring(0, builder.length() - 1));
-			}
-			
+			try {
+				List<Product> products = products();
+				td.updateMenu(products);
+				
+				StringBuilder builder = new StringBuilder();
+				products.stream().filter((Product p) -> { return p.getStock() > 0; }).filter((Product s) -> { return watching.contains(s.getName()); }).forEach((p) -> {
+					builder.append(p.getName());
+					builder.append("\n");
+				});
+				if(builder.length() > 1) {
+					td.displayTray(builder.substring(0, builder.length() - 1));
+				}
+			} catch(IOException e) {
+				System.out.println("Failed to scan this interval");
+				e.printStackTrace();
+			} catch (ParserConfigurationException | SAXException  e) {
+				System.out.println("Failed to parse");
+				td.displayError("Parse exception. Network may be unstable or program may be out of date.");
+				parserfail += 1;
+				e.printStackTrace();
+				if(parserfail >= 5)
+					return;
+			} 
 			synchronized(watching) {
 				try {
 					watching.wait(5 * 60 * 1000);
