@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import javax.json.Json;
@@ -35,19 +36,17 @@ public class Main {
 		while(true) {
 			System.out.println("Scanning...");
 			List<Product> products = products();
-			Stream<Product> instock = products.stream().filter((Product p) -> { return p.getStock() > 0; });
-			Stream<Product> stream = instock.filter((Product s) -> { return watching.contains(s.getName()); });
-			List<Product> matching = new ArrayList<>();
-			stream.forEach((s) -> { matching.add(s); });
-			String total = "";
-			for(Product s : matching) {
-				total += s.getName() + "\n";
-			}
 			td.updateMenu(products);
-			if(matching.size() > 0) {
-				total = total.substring(0, total.length() - 1);
-				td.displayTray(total);
+			
+			StringBuilder builder = new StringBuilder();
+			products.stream().filter((Product p) -> { return p.getStock() > 0; }).filter((Product s) -> { return watching.contains(s.getName()); }).forEach((p) -> {
+				builder.append(p.getName());
+				builder.append("\n");
+			});
+			if(builder.length() > 1) {
+				td.displayTray(builder.substring(0, builder.length() - 1));
 			}
+			
 			synchronized(watching) {
 				try {
 					watching.wait(5 * 60 * 1000);
