@@ -6,12 +6,14 @@ import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
-import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 public class NotificationMaker {
 	
@@ -21,13 +23,14 @@ public class NotificationMaker {
 	/**
 	 * @param available
 	 * @throws AWTException 
+	 * @throws IOException 
 	 */
-	public NotificationMaker() throws AWTException {
+	public NotificationMaker() throws AWTException, IOException {
 		//Obtain only one instance of the SystemTray object
         SystemTray tray = SystemTray.getSystemTray();
 
         //If the icon is a file
-        Image image = Toolkit.getDefaultToolkit().createImage("answer.png");
+        Image image = ImageIO.read(this.getClass().getResourceAsStream("resources/icon.png"));
 
         this.trayIcon = new TrayIcon(image, "Tray Demo");
         //Let the system resize the image if needed

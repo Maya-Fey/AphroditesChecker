@@ -29,7 +29,7 @@ public class Main {
 		//watching.add("Androcur 50mg (Cyproterone Acetate)");
 	}
 
-	public static void main(String[] args) throws AWTException {
+	public static void main(String[] args) throws AWTException, IOException {
 	    NotificationMaker td = new NotificationMaker();
 	    int parserfail = 0;
 		while(true) {
