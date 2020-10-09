@@ -8,6 +8,8 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
@@ -15,10 +17,13 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-public class NotificationMaker {
+public class NotificationMaker implements ActionListener {
 	
 	private final PopupMenu popup = new PopupMenu();
+	
 	private final TrayIcon trayIcon;
+	
+	private final MenuItem exit = new MenuItem("Exit");
 	
 	/**
 	 * @param available
@@ -39,6 +44,8 @@ public class NotificationMaker {
         //Set tooltip text for the tray icon
         this.trayIcon.setToolTip("Aphrodites Scanner");
         tray.add(this.trayIcon);
+        
+        this.exit.addActionListener(this);
 	}
 	
 	public void updateMenu(List<Product> items) {
@@ -52,6 +59,9 @@ public class NotificationMaker {
 			item.addActionListener((e) -> { openWebpage(p.getURL()); });
 			this.popup.add(item);
 		}
+		this.popup.addSeparator();
+		this.popup.add(this.exit);
+		
 	}
 
 	public void displayTray(String available) throws AWTException {
@@ -68,6 +78,14 @@ public class NotificationMaker {
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) 
+	{
+		if(e.getSource() == this.exit) {
+			System.exit(0);
+		}
 	}
 
 
