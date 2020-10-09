@@ -13,17 +13,23 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
 public class NotificationMaker implements ActionListener {
+	
+	private final Map<String, MenuItem> menu = new HashMap<>();
 	
 	private final PopupMenu popup = new PopupMenu();
 	
 	private final TrayIcon trayIcon;
 	
 	private final MenuItem exit = new MenuItem("Exit");
+	
+	private boolean initialized = false;
 	
 	/**
 	 * @param available
@@ -49,6 +55,20 @@ public class NotificationMaker implements ActionListener {
 	}
 	
 	public void updateMenu(List<Product> items) {
+		if(this.initialized) {
+			for(Product p : items) {
+				MenuItem item = this.menu.get(p.getName());
+				item.setLabel(String.format("%3d %s", p.getStock(), p.getName()));
+				if(p.getStock() == 0)
+					item.setEnabled(false);
+			}
+		} else {
+			this.initialize(items);
+		}
+	}
+	
+	private void initialize(List<Product> items)
+	{
 		this.popup.removeAll();
 		this.popup.add("Last scan: " + new Date());
 		this.popup.addSeparator();
@@ -58,10 +78,12 @@ public class NotificationMaker implements ActionListener {
 				item.setEnabled(false);
 			item.addActionListener((e) -> { openWebpage(p.getURL()); });
 			this.popup.add(item);
+			this.menu.put(p.getName(), item);
 		}
 		this.popup.addSeparator();
 		this.popup.add(this.exit);
 		
+		this.initialized = true;
 	}
 
 	public void displayTray(String available) throws AWTException {
