@@ -48,7 +48,7 @@ public class Main {
 			} 
 			synchronized(td) {
 				try {
-					td.wait(5 * 4 * 1000);
+					td.wait(5 * 60 * 1000);
 				} catch (InterruptedException e) { /* Should never happen, single-threaded application. */ }
 			}
 		}
