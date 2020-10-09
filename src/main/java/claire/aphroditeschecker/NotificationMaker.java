@@ -1,8 +1,10 @@
 package claire.aphroditeschecker;
 
 import java.awt.AWTException;
+import java.awt.CheckboxMenuItem;
 import java.awt.Desktop;
 import java.awt.Image;
+import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
@@ -22,6 +24,7 @@ import javax.imageio.ImageIO;
 public class NotificationMaker implements ActionListener {
 	
 	private final Map<String, MenuItem> menu = new HashMap<>();
+	private final Map<MenuItem, String> notifyMenuMap = new HashMap<>();
 	
 	private final PopupMenu popup = new PopupMenu();
 	
@@ -81,6 +84,15 @@ public class NotificationMaker implements ActionListener {
 			this.menu.put(p.getName(), item);
 		}
 		this.popup.addSeparator();
+		
+		Menu notifyMenu = new Menu("Notifications");
+		for(Product p : items) {
+			CheckboxMenuItem check = new CheckboxMenuItem(p.getName());
+			notifyMenu.add(check);
+			this.notifyMenuMap.put(check, p.getName());
+		}
+		
+		this.popup.add(notifyMenu);
 		this.popup.add(this.exit);
 		
 		this.initialized = true;
