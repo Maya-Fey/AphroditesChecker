@@ -8,9 +8,7 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -19,15 +17,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 public class Main {
-	
-	public static final Set<String> watching = new HashSet<>();
-	
-	static {
-		watching.add("Climara Forte (Estradiol - 100mcg)");
-		watching.add("Oestrogel 80g (Estradiol Beta17)");
-		watching.add("Progesterone 200");
-		//watching.add("Androcur 50mg (Cyproterone Acetate)");
-	}
 
 	public static void main(String[] args) throws AWTException, IOException {
 	    NotificationMaker td = new NotificationMaker();
@@ -39,7 +28,7 @@ public class Main {
 				td.updateMenu(products);
 				
 				StringBuilder builder = new StringBuilder();
-				products.stream().filter((Product p) -> { return p.getStock() > 0; }).filter((Product s) -> { return watching.contains(s.getName()); }).forEach((p) -> {
+				products.stream().filter((Product p) -> { return p.getStock() > 0; }).filter((Product s) -> { return td.notificationsOnFor(s.getName()); }).forEach((p) -> {
 					builder.append(p.getName());
 					builder.append("\n");
 				});
@@ -57,9 +46,9 @@ public class Main {
 				if(parserfail >= 5)
 					return;
 			} 
-			synchronized(watching) {
+			synchronized(td) {
 				try {
-					watching.wait(5 * 60 * 1000);
+					td.wait(5 * 4 * 1000);
 				} catch (InterruptedException e) { /* Should never happen, single-threaded application. */ }
 			}
 		}

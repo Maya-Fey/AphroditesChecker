@@ -12,6 +12,8 @@ import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
@@ -21,10 +23,11 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-public class NotificationMaker implements ActionListener {
+public class NotificationMaker implements ActionListener, ItemListener {
 	
 	private final Map<String, MenuItem> menu = new HashMap<>();
 	private final Map<MenuItem, String> notifyMenuMap = new HashMap<>();
+	private final Map<String, Boolean> config = new HashMap<>();
 	
 	private final PopupMenu popup = new PopupMenu();
 	
@@ -90,6 +93,8 @@ public class NotificationMaker implements ActionListener {
 			CheckboxMenuItem check = new CheckboxMenuItem(p.getName());
 			notifyMenu.add(check);
 			this.notifyMenuMap.put(check, p.getName());
+			check.addActionListener(this);
+			check.addItemListener(this);
 		}
 		
 		this.popup.add(notifyMenu);
@@ -113,15 +118,25 @@ public class NotificationMaker implements ActionListener {
 	        e.printStackTrace();
 	    }
 	}
+	
+	public boolean notificationsOnFor(String name)
+	{
+		return this.config.containsKey(name) && this.config.get(name);
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) 
 	{
 		if(e.getSource() == this.exit) {
 			System.exit(0);
-		}
+		} 
 	}
 
-
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		boolean state = e.getStateChange() == ItemEvent.SELECTED;
+		String name = this.notifyMenuMap.get(e.getSource());
+		this.config.put(name, state);
+	}
 
 }
